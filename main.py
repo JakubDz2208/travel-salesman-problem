@@ -107,18 +107,20 @@ class AntColony:
     def update_pheromone(self, all_paths):
         evaporation = 1 - self.decay
         self.pheromone *= evaporation
-        updated_pheromones = np.zeros((self.n_cities, self.n_cities))
-        for path, distance in all_paths:
-            for i in range(len(path) - 1):
-                city_from = path[i]
-                city_to = path[i + 1]
-                updated_pheromones[city_from, city_to] += 1.0 / distance
-                updated_pheromones[city_to, city_from] += 1.0 / distance  # Update in both directions
+        best_path, best_distance = min(all_paths, key=lambda x: x[1])
+        
+        for i in range(len(best_path) - 1):   
+            city_from = best_path[i]
+            city_to = best_path[i + 1]
+            self.pheromone[city_from, city_to] += 1.0 / best_distance
+            self.pheromone[city_to, city_from] += 1.0 / best_distance  # Update in both directions        
+
         print("Updated pheromones:")
         for i in range(self.n_cities):
             for j in range(self.n_cities):
-                if i != j and updated_pheromones[i, j] != 0:  # Filter out self-transitions
-                    print(f"From {self.points[i][0]} to {self.points[j][0]}: {updated_pheromones[i, j]}")
+                if i != j and self.pheromone[i, j] != 0:  # Filter out self-transitions
+                    print(f"From {self.points[i][0]} to {self.points[j][0]}: {self.pheromone[i, j]}")
+
 
     def path_to_names(self, path):
         return [self.points[i][0] for i in path]
@@ -154,8 +156,8 @@ class AntColony:
 
 points = [('a', (1, 1)), ('b', (5, 8)), ('c', (7, 12)), ('d', (2, 9)), ('e', (7, 2)), ('f', (1, 12)), ('g', (4, 2))]
 
-n_ants = 15
-n_iterations = 20
+n_ants = 7
+n_iterations = 15
 
 ant_colony = AntColony(points, n_ants, n_iterations)
 best_iteration, shortest_path, shortest_distance, best_pheromones, best_probabilities = ant_colony.run()
